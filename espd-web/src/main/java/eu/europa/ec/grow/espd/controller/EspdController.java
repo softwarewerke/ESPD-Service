@@ -25,6 +25,13 @@
 package eu.europa.ec.grow.espd.controller;
 
 import com.google.common.base.Optional;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfDocument;
+import com.itextpdf.text.pdf.PdfFileSpecification;
+import com.itextpdf.text.pdf.PdfReader;
+import com.itextpdf.text.pdf.PdfStamper;
+import com.itextpdf.text.pdf.PdfWriter;
+
 import eu.europa.ec.grow.espd.domain.*;
 import eu.europa.ec.grow.espd.domain.enums.other.Country;
 import eu.europa.ec.grow.espd.domain.intf.UnboundedRequirementGroup;
@@ -393,9 +400,25 @@ class EspdController {
 
         espd.setHtml(addHtmlHeader(espd.getHtml()));
 
-        ByteArrayOutputStream pdfOutput = espdExporter.exportAsPdf(espd, agent);
+		ByteArrayOutputStream pdfOutput = espdExporter.exportAsPdf(espd, agent);
+		ByteArrayOutputStream xmlOutput = espdExporter.exportAsXml(espd, agent);
 
-        serveFileForDownload(pdfOutput, agent, "pdf", response);
+		ByteArrayOutputStream output = new ByteArrayOutputStream(pdfOutput.size() + xmlOutput.size() + 128);
+
+		try {
+			PdfReader reader = new PdfReader(pdfOutput.toByteArray());
+			PdfStamper stamper = new PdfStamper(reader, output);
+			PdfFileSpecification fs = PdfFileSpecification.fileEmbedded(stamper.getWriter(), null, "espd-response.xml",
+					xmlOutput.toByteArray());
+			stamper.addFileAttachment("", fs);
+			stamper.close();
+			output.flush();
+			output.close();
+		} catch (DocumentException ex) {
+			ex.printStackTrace();
+		}
+		
+        serveFileForDownload(output, agent, "pdf", response);
 
         return null;
     }

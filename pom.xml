@@ -171,7 +171,6 @@
                 <version>${jaxb.version}</version>
             </dependency>
 
-
             <!-- Testing dependencies -->
             <!-- Mandatory dependencies for using Spock -->
             <dependency>
@@ -221,6 +220,11 @@
         <dependency> <!-- enables mocking of classes without default constructor (together with CGLIB) -->
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
+        </dependency>
+        <dependency>
+        	<groupId>com.itextpdf</groupId>
+        	<artifactId>itextpdf</artifactId>
+        	<version>5.5.10</version>
         </dependency>
     </dependencies>
 
